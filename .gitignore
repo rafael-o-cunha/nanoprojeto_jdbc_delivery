@@ -1,0 +1,74 @@
+############################
+# Maven
+############################
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+
+############################
+# Tomcat (gerado pelo plugin)
+############################
+**/tomcat/
+**/apache-tomcat-maven-plugin/
+**/work/
+**/logs/
+**/webapps/
+**/m2e-wtp/
+
+############################
+# IDEs
+############################
+
+# IntelliJ
+.idea/
+*.iml
+*.iws
+
+# Eclipse
+.project
+.classpath
+.settings/
+.buildpath
+
+# VSCode
+.vscode/
+
+############################
+# Sistema operacional
+############################
+.DS_Store
+Thumbs.db
+
+############################
+# Java
+############################
+*.class
+*.log
+*.war
+*.jar
+
+############################
+# Docker / Infra
+############################
+# infra/postgres/data/
+# infra/postgres/*.pid
+infra/.env
+
+############################
+# Outros
+############################
+*.tmp
+*.bak
+*.swp
+
+
+README_EN.md
+README_ES.md
+README.md
+readme_resources/
