@@ -155,7 +155,7 @@ public class OrderDao implements IDao {
 		        """;
 		
     	PreparedStatement st = conn.prepareStatement(sql);
-		st.setLong("id", id);
+		st.setLong(1, id);
 		
 		ResultSet rs = st.executeQuery();
     	

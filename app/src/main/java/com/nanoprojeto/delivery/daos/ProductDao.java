@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import com.nanoprojeto.delivery.entities.Product;
 
@@ -58,7 +59,7 @@ public class ProductDao implements IDao{
     	return pList;
 	}
 
-	public Product findById(long id) throws SQLException {
+	public Optional<Product> findById(long id) throws SQLException {
 		
 		String sql = """
 		        SELECT id, name, price, description, image_uri
@@ -78,9 +79,9 @@ public class ProductDao implements IDao{
 	        p.setPrice(rs.getDouble("price"));
 	        p.setDescription(rs.getString("description"));
 	        p.setImageUri(rs.getString("image_uri"));
-	        return p;
+	        return Optional.of(p);
 	    }
-		return null;
+		return Optional.empty();
 	}
 
 }

@@ -3,6 +3,7 @@ package com.nanoprojeto.delivery.controllers;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
 
 import com.nanoprojeto.delivery.daos.IDao;
 import com.nanoprojeto.delivery.daos.OrderDao;
@@ -81,8 +82,8 @@ public class OperationExecutor {
         System.out.println();
 		System.out.println();
 		
-    	Product product = productDao.findById(3L);
-    	System.out.println(product);
+		Optional<Product> product = productDao.findById(3L);
+		product.ifPresent(System.out::println);;
 		
 		System.out.println();
 		System.out.println();

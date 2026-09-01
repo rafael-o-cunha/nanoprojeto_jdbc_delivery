@@ -2,8 +2,6 @@
 
 > O Código apresentado aqui está longe de ser perfeito. Meu foco será exclusivamente na prática de recurso realizando um sobrevoo na estrutura de projeto que  o Java oferece para acesso a dados de forma "crua" e nativa o JDBC, que é o tema central deste nanoprojeto. Então, caro programador experiente que está lendo isso, peço que não se preocupe demais com outras questões como arquitetura ou boas práticas. foco no essencial!
 
-
-
 # Perguntas que busco responder com este nanoprojeto:
 
 ## O que preciso fazer manualmente quando acesso um banco relacional diretamente através do JDBC?
@@ -11,8 +9,6 @@
 ## Quando uma operação envolve várias instruções SQL, eu preciso controlar explicitamente a transação?
 
 ---
-
-
 
 ## Criar, configurar e iniciar o projeto (1)
 
@@ -63,9 +59,6 @@ psql -U postgres -d delivery -c "\dt *.*"
 * [X] Criar entidades que serão usadas na prática do projeto [4]
 * [X] realizar consulta de entidades individualmente  realizar parsing para objeto
 
-
-
-
 ## Operações a serem realizadas:
 
 ### Consulta
@@ -76,21 +69,16 @@ psql -U postgres -d delivery -c "\dt *.*"
 * [X] findById Order
 * [X] Order + products
 
-
 ### Inserção
 
 * [ ] Product
 * [ ] Order
 * [ ] Order + Products
 
-
-
 ### Atualização
 
 * [ ] Product
 * [ ] Order
-
-
 
 ### Deleção
 
@@ -98,10 +86,7 @@ psql -U postgres -d delivery -c "\dt *.*"
 * [ ] Order
 * [ ] Relacionamento Order/Product
 
-
-
 ---
-
 
 ### Realizando buscas de uma entidade e parsing para o objeto.
 
@@ -128,20 +113,20 @@ INNER JOIN tb_product ON tb_product.id = tb_order_product.product_id
 
 - cada ordem possuia 2 produtos no moento da consulta, foram retornados 2 registros compostos por dois produtos cada.
 
-
-
 ### Implelentei um Menu
 
 implementei um menu para facilitar o uso e testes para ver o resultado limpo e rápido no terminal enquanto o projeto crescer e foco no que importa, que é o jdbc.
 
 aproveitei pra separar em alguns pacotinhos inspirados em mvc.
 
-
 - Observei duas possibilidades de passar params para query quando fiz findByid como params posicionais, jdbc puro não tem opção de params nomeados, porém Hibernate e NamedParameterJdbcTemplate do Spring permitem. [7]
 - o PreparedStatatement transforma a query em string para query de fato e resolve os params.
   - também evita sql injection dado que ele nativamente trata os poarams como dados e não como parte da query string.
   - faz tratamento e escaping de tipos
   - Planeja e otimiza a consulta melhorando seu plano de execução ao compilá-la.
+
+
+também usei um optional só pra diferenciar a busca entre Product e Order e ter um exemplo simples guarado [8]
 
 
 Operações implementadas
@@ -152,18 +137,11 @@ Operações implementadas
 
 ---
 
-
-
-
-
-
 ---
-
-
 
 ### Resumo
 
--  uma implementação que fiz no experimento foi de colocar as consultas e transformações em uma camada Dao com as implementações isoladas  e só chamá-las no App.
+- uma implementação que fiz no experimento foi de colocar as consultas e transformações em uma camada Dao com as implementações isoladas  e só chamá-las no App.
 - Este repositório permanecerá salvo no github para possíveis novas implementações e novos experimentos ligados a jdbc.
 
 Pesquisando observei diversos pontos que levaram o ecossitema a naturalmente criar o Hibernate como:
@@ -208,3 +186,5 @@ há ainda outros pontos relevantes que me levam a criar um nanoprojeto para expl
 [7] [docs.oracle.com/javase/tutorial/jdbc/basics/prepared.html](https://docs.oracle.com/javase/tutorial/jdbc/basics/prepared.html)
 
 [7.1] [pt.stackoverflow.com/questions/99620/qual-a-diferen%C3%A7a-entre-o-statement-e-o-preparedstatement](https://pt.stackoverflow.com/questions/99620/qual-a-diferen%C3%A7a-entre-o-statement-e-o-preparedstatement)
+
+[8] [pt.stackoverflow.com/questions/447672/para-que-serve-o-optional-do-java-8-como-usar](https://pt.stackoverflow.com/questions/447672/para-que-serve-o-optional-do-java-8-como-usar)
