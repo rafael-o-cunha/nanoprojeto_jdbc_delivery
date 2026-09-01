@@ -2,6 +2,18 @@
 
 > O Código apresentado aqui está longe de ser perfeito. Meu foco será exclusivamente na prática de recurso realizando um sobrevoo na estrutura de projeto que  o Java oferece para acesso a dados de forma "crua" e nativa o JDBC, que é o tema central deste nanoprojeto. Então, caro programador experiente que está lendo isso, peço que não se preocupe demais com outras questões como arquitetura ou boas práticas. foco no essencial!
 
+
+
+# Perguntas que busco responder com este nanoprojeto:
+
+## O que preciso fazer manualmente quando acesso um banco relacional diretamente através do JDBC?
+
+## Quando uma operação envolve várias instruções SQL, eu preciso controlar explicitamente a transação?
+
+---
+
+
+
 ## Criar, configurar e iniciar o projeto (1)
 
 ### Setup base
@@ -49,17 +61,52 @@ psql -U postgres -d delivery -c "\dt *.*"
 ```
 
 * [X] Criar entidades que serão usadas na prática do projeto [4]
-
-
-
 * [X] realizar consulta de entidades individualmente  realizar parsing para objeto
+
+
+
+
+## Operações a serem realizadas:
+
+### Consulta
+
+* [X] findAll Product
+* [X] findAll Order
+* [X] findById Product
+* [X] findById Order
+* [X] Order + products
+
+
+### Inserção
+
+* [ ] Product
+* [ ] Order
+* [ ] Order + Products
+
+
+
+### Atualização
+
+* [ ] Product
+* [ ] Order
+
+
+
+### Deleção
+
+* [ ] Product
+* [ ] Order
+* [ ] Relacionamento Order/Product
+
+
+
+---
+
 
 ### Realizando buscas de uma entidade e parsing para o objeto.
 
 - observa-se a necessidade de parsing manual, um atributo por vez, porém o que pode ocorrer é a necessidade de tratamento de valor nulo assim como combinação entre atributos buscados na consulta(projeção) e mapeamento para montagem do objeto.
 - além disso é preciso ter atenção aos tipos de dados que são retornados pelo resultSet e como serão feitos parsing para os tipos dos objetos.
-
-
 
 * [X] realizar consulta com junção de entidades e realizar parsing
 
@@ -80,8 +127,53 @@ INNER JOIN tb_product ON tb_product.id = tb_order_product.product_id
 ![1788137647844](image/notas/1788137647844.png)
 
 - cada ordem possuia 2 produtos no moento da consulta, foram retornados 2 registros compostos por dois produtos cada.
-- a última implementação que fiz no experimento foi de colocar as consultas e transformações em uma camada Dao com as implementações isoladas  e só chamá-las no App.
+
+
+
+### Implelentei um Menu
+
+implementei um menu para facilitar o uso e testes para ver o resultado limpo e rápido no terminal enquanto o projeto crescer e foco no que importa, que é o jdbc.
+
+aproveitei pra separar em alguns pacotinhos inspirados em mvc.
+
+
+- Observei duas possibilidades de passar params para query quando fiz findByid como params posicionais, jdbc puro não tem opção de params nomeados, porém Hibernate e NamedParameterJdbcTemplate do Spring permitem. [7]
+- o PreparedStatatement transforma a query em string para query de fato e resolve os params.
+  - também evita sql injection dado que ele nativamente trata os poarams como dados e não como parte da query string.
+  - faz tratamento e escaping de tipos
+  - Planeja e otimiza a consulta melhorando seu plano de execução ao compilá-la.
+
+
+Operações implementadas
+
+- FIndAll
+- Order + products
+- FIndById
+
+---
+
+
+
+
+
+
+---
+
+
+
+### Resumo
+
+-  uma implementação que fiz no experimento foi de colocar as consultas e transformações em uma camada Dao com as implementações isoladas  e só chamá-las no App.
 - Este repositório permanecerá salvo no github para possíveis novas implementações e novos experimentos ligados a jdbc.
+
+Pesquisando observei diversos pontos que levaram o ecossitema a naturalmente criar o Hibernate como:
+
+- aumento de produtividade por prover boilerplate
+- gestão de transações integrado.
+- redução de uso de try-catch
+- uso de HQL, uma forma mais próxima dos objetos do que do banco relacional para escrita de querys
+
+há ainda outros pontos relevantes que me levam a criar um nanoprojeto para explorar mais a configuração e uso do hibernate em breve.
 
 ---
 
@@ -108,3 +200,11 @@ INNER JOIN tb_product ON tb_product.id = tb_order_product.product_id
 [4] [github.com/devsuperior/jdbc-postgres](https://github.com/devsuperior/jdbc-postgres)
 
 [5][www.geeksforgeeks.org/java/jdbc-result-set](https://www.geeksforgeeks.org/java/jdbc-result-set/)
+
+[6][medium.com/javarevisited/why-hibernate-is-better-than-jdbc-key-advantages-and-examples-201b75fb5687](https://medium.com/javarevisited/why-hibernate-is-better-than-jdbc-key-advantages-and-examples-201b75fb5687)
+
+[6.1][cybernite.in/blog/advantages-of-hibernate-over-jdbc](https://cybernite.in/blog/advantages-of-hibernate-over-jdbc/)
+
+[7] [docs.oracle.com/javase/tutorial/jdbc/basics/prepared.html](https://docs.oracle.com/javase/tutorial/jdbc/basics/prepared.html)
+
+[7.1] [pt.stackoverflow.com/questions/99620/qual-a-diferen%C3%A7a-entre-o-statement-e-o-preparedstatement](https://pt.stackoverflow.com/questions/99620/qual-a-diferen%C3%A7a-entre-o-statement-e-o-preparedstatement)

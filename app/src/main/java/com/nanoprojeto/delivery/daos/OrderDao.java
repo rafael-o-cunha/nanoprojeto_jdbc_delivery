@@ -1,6 +1,7 @@
 package com.nanoprojeto.delivery.daos;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -65,24 +66,25 @@ public class OrderDao implements IDao {
 	public List<Order> findOrdersWithProducts() throws SQLException {
 		Map<Long, Order> orderMap = new HashMap<>();
 		
-		StringBuilder sql = new StringBuilder(); 
-    	sql.append(" SELECT ");
-    	sql.append("  o.id AS order_id, ");
-		sql.append("  o.latitude, ");
-		sql.append("  o.longitude, ");
-		sql.append("  o.moment, ");
-		sql.append("  o.status, ");
-		sql.append("  p.id AS product_id, ");
-		sql.append("  p.name, ");
-		sql.append("  p.description, ");
-		sql.append("  p.price, ");
-		sql.append("  p.image_uri ");
-    	sql.append(" FROM tb_order o ");
-    	sql.append(" INNER JOIN tb_order_product op ON o.id = op.order_id ");
-    	sql.append(" INNER JOIN tb_product p ON p.id = op.product_id ");
+		String sql = """
+			    SELECT 
+			        o.id AS order_id,
+			        o.latitude,
+			        o.longitude,
+			        o.moment,
+			        o.status,
+			        p.id AS product_id,
+			        p.name,
+			        p.description,
+			        p.price,
+			        p.image_uri
+			    FROM tb_order o
+			    INNER JOIN tb_order_product op ON o.id = op.order_id
+			    INNER JOIN tb_product p ON p.id = op.product_id
+			    """;
     	
     	Statement st = this.conn.createStatement();
-    	ResultSet rs = st.executeQuery(sql.toString());
+    	ResultSet rs = st.executeQuery(sql);
 		
 	    while (rs.next()) {
 	        Long orderId = rs.getLong("order_id");
@@ -141,6 +143,41 @@ public class OrderDao implements IDao {
 	    }
 
 	    return new ArrayList<>(orderMap.values());
+	}
+
+	@Override
+	public Order findById(long id) throws SQLException {
+		
+		String sql = """
+		        SELECT id, latitude, longitude, moment, status
+		        FROM tb_order
+		        WHERE id = :id
+		        """;
+		
+    	PreparedStatement st = conn.prepareStatement(sql);
+		st.setLong("id", id);
+		
+		ResultSet rs = st.executeQuery();
+    	
+		if (rs.next()) {
+			Order order = new Order();
+			order.setId(rs.getLong("id"));
+			order.setLatitude(rs.getDouble("latitude"));
+			order.setLongitude(rs.getDouble("longitude"));
+	        
+	        Timestamp ts = rs.getTimestamp("moment");
+	        if (ts != null) {
+	            order.setMoment(ts.toInstant());
+	        }
+
+	        int status = rs.getInt("status");
+	        if (!rs.wasNull()) {
+	            order.setStatus(OrderStatus.values()[status]);
+	        }
+	        
+	        return order;
+	    }
+		return null;
 	}
 
 }

@@ -1,39 +1,33 @@
 package com.nanoprojeto.delivery;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.List;
+import java.util.Scanner;
 
 import com.nanoprojeto.delivery.config.ConnectionFactory;
 import com.nanoprojeto.delivery.config.EnvFile;
-import com.nanoprojeto.delivery.daos.OrderDao;
-import com.nanoprojeto.delivery.daos.ProductDao;
-import com.nanoprojeto.delivery.entities.Order;
-import com.nanoprojeto.delivery.entities.Product;
+import com.nanoprojeto.delivery.controllers.OperationExecutor;
+import com.nanoprojeto.delivery.views.Menu;
 
 public class App {
     public static void main(String[] args) {
         try {
         	Connection conn = ConnectionFactory.getConnection(EnvFile.ENV);
         	
-        	ProductDao pDao = new ProductDao(conn);
-        	List<Product> products = pDao.findAll();
-        	products.forEach(System.out::println);
-        	
-        	System.out.println();
-        	
-        	OrderDao oDao = new OrderDao(conn);
-        	List<Order> orders = oDao.findAll();
-        	orders.forEach(System.out::println);
-        	
-        	System.out.println();
-        	
-        	List<Order> ordersWithProducts = oDao.findOrdersWithProducts();
-        	ordersWithProducts.forEach(System.out::println);
-        	
+        	Scanner scanner = new Scanner(System.in);
+
+            Menu menu = new Menu(scanner);
+            OperationExecutor executor = new OperationExecutor(conn);
+            int option;
+            do {
+                option = menu.show();
+                menu.clearScreen();
+                executor.execute(option);
+                menu.waitForEnter(option);
+            } while (option != 0);
+
+            scanner.close();
+            
         }
         catch (SQLException e) {
             System.out.println("Erro ao conectar ao banco: " + e.getMessage());

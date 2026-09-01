@@ -1,6 +1,7 @@
 package com.nanoprojeto.delivery.daos;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -55,6 +56,31 @@ public class ProductDao implements IDao{
     	    pList.add(p);
     	}
     	return pList;
+	}
+
+	public Product findById(long id) throws SQLException {
+		
+		String sql = """
+		        SELECT id, name, price, description, image_uri
+		        FROM tb_product
+		        WHERE id = ?
+		        """;
+		
+    	PreparedStatement st = conn.prepareStatement(sql);
+		st.setLong(1, id);
+		
+		ResultSet rs = st.executeQuery();
+    	
+		if (rs.next()) {
+	        Product p = new Product();
+	        p.setId(rs.getLong("id"));
+	        p.setName(rs.getString("name"));
+	        p.setPrice(rs.getDouble("price"));
+	        p.setDescription(rs.getString("description"));
+	        p.setImageUri(rs.getString("image_uri"));
+	        return p;
+	    }
+		return null;
 	}
 
 }
