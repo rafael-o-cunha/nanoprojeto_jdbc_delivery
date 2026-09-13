@@ -42,3 +42,6 @@ INSERT INTO tb_order_product (order_id, product_id) VALUES
 (1 , 2),
 (2 , 2),
 (2 , 3);
+
+ALTER TABLE tb_product
+ADD COLUMN version INTEGER NOT NULL DEFAULT 0;

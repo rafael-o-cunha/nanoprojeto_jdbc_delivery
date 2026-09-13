@@ -61,4 +61,47 @@ public class ConnectionFactory {
 			}
 		}
 	}
+
+
+	public static Connection createNewConnection(EnvFile ev) {
+		try {
+			String host = null;
+			String port = null;
+			String database = null;
+			String user = null;
+			String password = null;
+
+			if (ev.equals(EnvFile.PROPERTIES)) {
+
+				Properties props = LoadProperty.LoadProperties();
+
+				host = props.getProperty("POSTGRES_HOST");
+				port = props.getProperty("POSTGRES_PORT");
+				database = props.getProperty("POSTGRES_DB");
+				user = props.getProperty("POSTGRES_USER");
+				password = props.getProperty("POSTGRES_PASSWORD");
+
+			}
+			else if (ev.equals(EnvFile.ENV)) {
+
+				host = System.getenv("POSTGRES_HOST");
+				port = System.getenv("POSTGRES_PORT");
+				database = System.getenv("POSTGRES_DB");
+				user = System.getenv("POSTGRES_USER");
+				password = System.getenv("POSTGRES_PASSWORD");
+			}
+
+			String url =
+					"jdbc:postgresql://" +
+					host + ":" +
+					port + "/" +
+					database;
+
+			return DriverManager.getConnection(url, user, password);
+
+		}
+		catch (SQLException e) {
+			throw new DbException(e.getMessage());
+		}
+	}
 }

@@ -23,7 +23,8 @@ public class Menu {
                 2 - findAll Order
                 3 - findById Product
                 4 - findById Order
-                5 - Order + Products
+                5 - AllOrders + Products
+                13 - Order + Products
                 
                 INSERÇÃO
                 6 - Product
@@ -37,7 +38,13 @@ public class Menu {
                 DELEÇÃO
                 11 - Product
                 12 - Order
-                13 - Relacionamento Order/Product
+                14 - Relacionamento Order/Product
+                
+                OUTROS CASOS
+                15 - Pagination
+                16 - Isolation And Concurrency by Price
+                17 - Isolation And Concurrency by Version
+                18 - Batch mode
                 
                 0 - Sair
                 

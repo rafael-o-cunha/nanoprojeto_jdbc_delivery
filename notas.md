@@ -71,20 +71,20 @@ psql -U postgres -d delivery -c "\dt *.*"
 
 ### Inserção
 
-* [ ] Product
-* [ ] Order
-* [ ] Order + Products
+* [X] Product
+* [X] Order
+* [X] Order + Products
 
 ### Atualização
 
-* [ ] Product
-* [ ] Order
+* [X] Product
+* [X] Order
 
 ### Deleção
 
-* [ ] Product
-* [ ] Order
-* [ ] Relacionamento Order/Product
+* [X] Product
+* [X] Order
+* [X] Relacionamento Order/Product
 
 ---
 
@@ -125,9 +125,7 @@ aproveitei pra separar em alguns pacotinhos inspirados em mvc.
   - faz tratamento e escaping de tipos
   - Planeja e otimiza a consulta melhorando seu plano de execução ao compilá-la.
 
-
-também usei um optional só pra diferenciar a busca entre Product e Order e ter um exemplo simples guarado [8]
-
+também usei um optional e ter um exemplo simples guardado [8]
 
 Operações implementadas
 
@@ -136,6 +134,56 @@ Operações implementadas
 - FIndById
 
 ---
+
+- para criação de Insert[9] utilizei PrepareStatement com **RETURN_GENERATED_KEYS** de param que disponibiliza as chaves geradas pelo banco após o insert, onde nesse caso o Postgre irá gerar automaticamente o ID da entidade salva no banco.
+- para execução fiz uso de executeUpdate(), que é o método recomendado para INSERT, UPDATE e DELETE, e retorna quantidade de registros afetados.
+- depois na obtenção do resultado o getGeneratedKeys devolveu as chaves geradas para que eu pudesse atualizar o objeto que está em memória.
+- Nos insert simples a aplicação abre a transção e realizar commit automaticamente devido a configuração padrão do JDBC em autoCommit[10], e com isso eu só preciso controlar abertura, commit e rollback de transação quando tiver múltiplas operações.
+- na inserção de OrderWithProducts usei commit = false para que eu pudesse criar ordem e depois as relações com produtos, e só depois realizar commit, mas além disso validei antes de colocar os produtos na ordem, para garantir que eles existem.
+- após a execução voltei o autocommit para true para retornar o comportamento padrão do jdbc
+- o que chamou minha atenção nesse ponto é o controle manual, se o desenvolvedor fica responsável por controlar autocommit e outros pontos sensíveis do acesso e manipulação de dados junto a base de dados e cometer algum esquecimento ele pode ter problemas de integridade de dados.
+
+### Sobre o Update
+
+- vi que rowsAffected mostra que uma operação foi realizada na linha, não que dados mudaram, ou seja, está a nível de execução do update e não de dados, não vejo garantia a não ser que compare mudança com objeto antes e depois.
+- Preço do produto é double, mas o objeto passa Double(wrapper), logo pode ocorrer nullPointer pois se o atributo estiver vazio ele não realizar unboxing do dado, pra resolver isso o jdbc permite passar um `st.setNull(2, Types.DOUBLE)`visando garantir o tratamento de dados nulos(como no caso do preço).
+- o update que criei atualiza todos os atributos da entidade, com isso se o objeto passar atributo nulo e o campo no banco permitir nulo ele será limpo, o hibernate lida com isso da mesma forma pois monitora a entidade com ela em memória.
+- para evitar problemas de update limpando dados de registros do banco pode-se obter a entidade e alterar apenas o que é preciso, ou então escrever um update que altera apenas o que for passado, por exemplo: escrever um update por atributo ou um update que monta a query apenas com os atributos que não são nulos, daí surge outra necessidade, quando quiser limpar um dado será necessário usar o update completo passando tudo e limpando o atributo desejado.
+- alteração de entidade completa ou parcial é essencialmente o que é tratado em um endpoint de API realizando PUT(completo) ou Patch(parcial), é um ponto de atenção que não tenha tanta especialização de comportamento para evitar descontrole na manipulação dos atributos de entidades, geralmente o que vejo um objeto sendo recuperado e passado para um update completo, apenas com os campos alterados, independente do endpoint.
+
+### sobre delete
+
+- jdbc se comporta bem com um delete em uma entidade associada, ele emite uma excessão informação que não foi possível  deletar um registro por estar associado em uma outra entidade via chave estrangeira.
+- na deleção da relação entre order e product a consulta simples de order não basta para seguir para deleção da relação com product, pois ela traz apenas a order, então faz-se necessário a criação de uma consulta que possa tazer order completa(incluindo os products), o ponto dessa operação é que envolve o conceito de eager e lazyload [11] que o jdbc não implementa, sendo necessário implementação manual, ou seja, uma consulta que recupere as duas entidades do banco e depois o resultset precisa ser parseado na composição de order que contem products, como feito na findOrdersWithProducts, só que agora é byID, ou seja, retorna apenas 1 registro.
+
+### Operações extras
+
+- para praticar um pouco mais visualizando como o jdbc trabalha, decidi implementar outras operações para ver de amostra e experimento.
+
+**Paginação. [12]**
+
+- a execução de consulta paginada resume-se em definir em qual página está e qual o salto (size ou offset calculado) de cada página, desta forma é possível navegar entre "páginas" que é o mesmo que ver uma sequência de itens específicos.
+- a query mudou muito pouco, mas foi preciso implementar um cálculo de deslocamento da página (offset)
+- a paginação feita com offset e limit na query não fica em cache, ou seja, eu posso parar aplicação e passar outra página que funcionará, cada consulta retorna um grupo de registros sob o conceito de página.
+
+**Concorrência. [ 13 ]**
+
+- para simular concorrência vou testar o uso de lock otimista.
+- consiste em basicamente usa um campo no banco de dados para ter validação de versão do dado observado e usa esse campo como validação de garantia de escrita ou não de informação.
+- em uma operação usei  id + price do produto, em outra use id + versão, apenas para deixar salvo as duas formas de realizar, sendo o uso de versão padronizado inclusive pelo Hibernate.
+- existe a possibilidade também do uso de timestamp mas pela probabilidade de ocorrer sinc de nework time proocol pode falhar.
+- para usar version(atributo criado em produto) precisei criar o atributo na entidade, alterar query findById para adicionar o retorno(que pode ocorrer se for necessário o retorno de version em outras consultas também), além de setar version na consulta com jdbc, ou seja, ocorreram diversos pontos de alteração de forma manual, não apenas na entidade, mas também em métodos do dao, e provalmente em uma aplicação com regras de negócio implementadas em um service várias regras precisariam ser alteradas também.
+
+```SQL
+ALTER TABLE tb_product
+ADD COLUMN version INTEGER NOT NULL DEFAULT 0;
+```
+
+- usei threads[14] para poder simular dois usuários concorrendo pela escrita no dado que está no banco.
+- precisei capturar dentro do método que realiza o teste de concorrencia a SQLException pois o run() da interface runnable não lança SQLExeption[15]
+- para sincronização das threads e observar o comportamento de validação de dados obsoletos da concorrência funcionando fiz uso de CountDown e controle de sincronização da thread com await
+- para validar no teste eu consultei com ambas threads, depois executei A enquanto B esperava e então liberei B para que ela tetasse executar o update com dados obsoletos.
+
 
 ---
 
@@ -185,6 +233,26 @@ há ainda outros pontos relevantes que me levam a criar um nanoprojeto para expl
 
 [7] [docs.oracle.com/javase/tutorial/jdbc/basics/prepared.html](https://docs.oracle.com/javase/tutorial/jdbc/basics/prepared.html)
 
-[7.1] [pt.stackoverflow.com/questions/99620/qual-a-diferen%C3%A7a-entre-o-statement-e-o-preparedstatement](https://pt.stackoverflow.com/questions/99620/qual-a-diferen%C3%A7a-entre-o-statement-e-o-preparedstatement)
+[7.1] [www.geeksforgeeks.org/sql/difference-between-statement-and-preparedstatement](https://www.geeksforgeeks.org/sql/difference-between-statement-and-preparedstatement/)
 
 [8] [pt.stackoverflow.com/questions/447672/para-que-serve-o-optional-do-java-8-como-usar](https://pt.stackoverflow.com/questions/447672/para-que-serve-o-optional-do-java-8-como-usar)
+
+[9][neon.com/postgresql/jdbc/insert](https://neon.com/postgresql/jdbc/insert)
+
+[10][neon.com/postgresql/jdbc/transaction](https://neon.com/postgresql/jdbc/transaction)
+
+[11] [www.devmedia.com.br/lazy-e-eager-loading-com-hibernate/29554](https://www.devmedia.com.br/lazy-e-eager-loading-com-hibernate/29554)
+
+[12] [www.baeldung.com/java-jdbc-pagination](https://www.baeldung.com/java-jdbc-pagination)
+
+[13][bytebytego.com/guides/pessimistic-vs-optimistic-locking](https://bytebytego.com/guides/pessimistic-vs-optimistic-locking/)
+
+[13.1] [dev.to/jordihofc/criando-sistemas-de-reservas-consistentes-com-optimistic-locking-spring-boot-e-jpahibernate-2h8b](https://dev.to/jordihofc/criando-sistemas-de-reservas-consistentes-com-optimistic-locking-spring-boot-e-jpahibernate-2h8b)
+
+[13;2][www.youtube.com/watch?v=vocYtV-9Bys](https://www.youtube.com/watch?v=vocYtV-9Bys)[9Bys](https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=https://www.youtube.com/watch%3Fv%3DvocYtV-9Bys)
+
+[14][www.devmedia.com.br/trabalhando-com-threads-em-java/28780](https://www.devmedia.com.br/trabalhando-com-threads-em-java/28780)
+
+[14.1][www.geeksforgeeks.org/java/countdownlatch-in-java](https://www.geeksforgeeks.org/java/countdownlatch-in-java/)
+
+[15] [www.geeksforgeeks.org/java/runnable-interface-in-java](https://www.geeksforgeeks.org/java/runnable-interface-in-java/)

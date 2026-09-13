@@ -17,7 +17,7 @@ public class App {
         	Scanner scanner = new Scanner(System.in);
 
             Menu menu = new Menu(scanner);
-            OperationExecutor executor = new OperationExecutor(conn);
+            OperationExecutor executor = new OperationExecutor(conn, scanner);
             int option;
             do {
                 option = menu.show();

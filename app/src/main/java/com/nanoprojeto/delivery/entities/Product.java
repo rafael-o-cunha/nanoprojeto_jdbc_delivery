@@ -7,6 +7,7 @@ public class Product {
 	private Double price;
 	private String description;
 	private String imageUri;
+	private Integer version;
 	
 	public Product() {}
 
@@ -50,11 +51,20 @@ public class Product {
 		this.imageUri = imageUri;
 	}
 
+	public Integer getVersion() {
+		return this.version;
+	}
+
+	public void setVersion(Integer version) {
+		this.version = version;
+	}
+
 	@Override
 	public String toString() {
 		return "Product [id=" + id +
 				", name=" + name +
 				", price=" + price +
+				", version=" + version +
 				", description=" + description +
 				", imageUri=" + imageUri + "]";
 	}
