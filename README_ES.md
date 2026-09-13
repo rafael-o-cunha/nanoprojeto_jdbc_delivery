@@ -8,7 +8,7 @@
 
 <div style="display: flex; align-items: center; padding: 10px;">
   <span>
-    <a href="https://github.com/rafael-o-cunha/">
+    <a href="https://github.com/rafael-o-cunha/rafael-o-cunha/blob/main/README_ES.md">
         <img src="https://img.shields.io/badge/-Home-black?style=for-the-badge" alt="Voltar ao Perfil">
     </a>
   </span>
