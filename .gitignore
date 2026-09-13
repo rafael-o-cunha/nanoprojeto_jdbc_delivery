@@ -66,9 +66,3 @@ infra/.env
 *.tmp
 *.bak
 *.swp
-
-
-README_EN.md
-README_ES.md
-README.md
-readme_resources/

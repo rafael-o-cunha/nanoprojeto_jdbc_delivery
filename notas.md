@@ -86,6 +86,12 @@ psql -U postgres -d delivery -c "\dt *.*"
 * [X] Order
 * [X] Relacionamento Order/Product
 
+### Operações extras:
+
+* [X] Paginação
+* [X] Concorrência
+* [X] Operação em lote
+
 ---
 
 ### Realizando buscas de uma entidade e parsing para o objeto.
@@ -184,6 +190,11 @@ ADD COLUMN version INTEGER NOT NULL DEFAULT 0;
 - para sincronização das threads e observar o comportamento de validação de dados obsoletos da concorrência funcionando fiz uso de CountDown e controle de sincronização da thread com await
 - para validar no teste eu consultei com ambas threads, depois executei A enquanto B esperava e então liberei B para que ela tetasse executar o update com dados obsoletos.
 
+**Batch [16]**
+
+- para operação em lote, fiz inserção de 5 produtos onde uma transação fica aberta,
+- o prepareStatement vai ser montando recebendo params de todos os products,
+- por fim ao ser executado o executeBatch irá retornar um array contendo o resultaod de cada operação, sendo 1 para sucesso...
 
 ---
 
@@ -197,7 +208,8 @@ Pesquisando observei diversos pontos que levaram o ecossitema a naturalmente cri
 - aumento de produtividade por prover boilerplate
 - gestão de transações integrado.
 - redução de uso de try-catch
-- uso de HQL, uma forma mais próxima dos objetos do que do banco relacional para escrita de querys
+- uso de HQL, uma forma mais próxima dos objetos do que do banco relacional para escrita de querys.
+- tratamento facilitado para lidar com concorrência
 
 há ainda outros pontos relevantes que me levam a criar um nanoprojeto para explorar mais a configuração e uso do hibernate em breve.
 
@@ -226,6 +238,12 @@ há ainda outros pontos relevantes que me levam a criar um nanoprojeto para expl
 [4] [github.com/devsuperior/jdbc-postgres](https://github.com/devsuperior/jdbc-postgres)
 
 [5][www.geeksforgeeks.org/java/jdbc-result-set](https://www.geeksforgeeks.org/java/jdbc-result-set/)
+
+[5.1] [www.devmedia.com.br/introducao-a-jpa-java-persistence-api/28173](https://www.devmedia.com.br/introducao-a-jpa-java-persistence-api/28173)
+
+[5.2] [jakarta.ee/specifications/persistence/3.2/jakarta-persistence-spec-3.2](https://jakarta.ee/specifications/persistence/3.2/jakarta-persistence-spec-3.2)
+
+[5.3] [jakarta.ee/specifications/persistence/3.2/apidocs/jakarta.persistence/module-summary.html](https://jakarta.ee/specifications/persistence/3.2/apidocs/jakarta.persistence/module-summary.html)
 
 [6][medium.com/javarevisited/why-hibernate-is-better-than-jdbc-key-advantages-and-examples-201b75fb5687](https://medium.com/javarevisited/why-hibernate-is-better-than-jdbc-key-advantages-and-examples-201b75fb5687)
 
@@ -256,3 +274,7 @@ há ainda outros pontos relevantes que me levam a criar um nanoprojeto para expl
 [14.1][www.geeksforgeeks.org/java/countdownlatch-in-java](https://www.geeksforgeeks.org/java/countdownlatch-in-java/)
 
 [15] [www.geeksforgeeks.org/java/runnable-interface-in-java](https://www.geeksforgeeks.org/java/runnable-interface-in-java/)
+
+[16] [www.baeldung.com/jdbc-batch-processing](https://www.baeldung.com/jdbc-batch-processing)
+
+[16.1] [www.geeksforgeeks.org/java/inserting-records-in-batch-using-jdbc](https://www.geeksforgeeks.org/java/inserting-records-in-batch-using-jdbc/)

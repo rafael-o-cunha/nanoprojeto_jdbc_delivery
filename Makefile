@@ -40,7 +40,7 @@ psql:
 
 clean:
 	$(COMPOSE) down -v
-	rm -rf infra/postgres/data
+	sudo rm -rf infra/postgres/data
 
 db-reset:
 	$(COMPOSE) down -v

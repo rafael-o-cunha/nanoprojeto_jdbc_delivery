@@ -24,7 +24,7 @@ public class ProductDao implements IDao<Product>{
 		List<Product> pList = new ArrayList<Product>();
 		
 		Statement st = conn.createStatement();
-		ResultSet rs = st.executeQuery("select * from tb_product");
+		ResultSet rs = st.executeQuery("select * from tb_product order by id");
     	
 		while(rs.next()) {
     		Product p = new Product();
@@ -52,6 +52,11 @@ public class ProductDao implements IDao<Product>{
 			int version = rs.getInt("version");
     	    if (!rs.wasNull()) {
     	        p.setVersion(version);
+    	    }
+
+			String image_uri = rs.getString("image_uri");
+    	    if (!rs.wasNull()) {
+    	        p.setImageUri(image_uri);
     	    }
 
     	    pList.add(p);
@@ -295,4 +300,40 @@ public class ProductDao implements IDao<Product>{
 		}
 	}
 
+	public int[] batchInsert(List<Product> products) throws SQLException {
+		String sql = """
+				INSERT INTO tb_product (name, price, description, image_uri)
+				VALUES (?, ?, ?, ?)
+				""";
+
+		try {
+			conn.setAutoCommit(false);
+	
+			PreparedStatement st = conn.prepareStatement(sql);
+			for(Product p : products) {
+				st.setString(1, p.getName());
+				st.setDouble(2, p.getPrice());
+				st.setString(3, p.getDescription());
+				st.setString(4, p.getImageUri());
+				st.addBatch();
+			}
+
+			/**
+			 * retorna o status de cada operação em um array
+			 * sendo 1 = sucesso.
+			 */
+			int[] result = st.executeBatch();
+
+			conn.commit();
+
+			return result;
+		}
+		catch(SQLException e) {
+			conn.rollback();
+			throw e;
+		}
+		finally {
+			conn.setAutoCommit(true);
+		}
+	}
 }

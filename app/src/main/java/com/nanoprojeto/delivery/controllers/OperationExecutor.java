@@ -3,6 +3,7 @@ package com.nanoprojeto.delivery.controllers;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
@@ -585,7 +586,48 @@ public class OperationExecutor {
     private void batchMode() throws SQLException {
         System.out.println("Executando Batch mode...");
 		System.out.println();
-		
+
+        List<Product> products = this.createProductsToInsert();
+
+		int[] result = productDao.batchInsert(products);
+
+        System.out.println("Produtos processados: " + result.length);
+        System.out.println("Linhas afetadas: " + Arrays.stream(result).sum());
+
 		System.out.println();
 	}
+
+    private List<Product> createProductsToInsert() {
+        Product p1 = new Product();
+        p1.setName("Pizza de Chocolate");
+        p1.setPrice(39.90);
+        p1.setDescription("Pizza doce coberta com chocolate ao leite derretido.");
+        p1.setImageUri("pizza_chocolate.jpg");
+
+        Product p2 = new Product();
+        p2.setName("Pizza de Banana com Canela");
+        p2.setPrice(34.90);
+        p2.setDescription("Pizza doce com fatias de banana caramelizada e toque de canela.");
+        p2.setImageUri("pizza_banana_canela.jpg");
+
+        Product p3 = new Product();
+        p3.setName("Pizza de Morango com Nutella");
+        p3.setPrice(44.90);
+        p3.setDescription("Pizza doce coberta com Nutella e morangos frescos.");
+        p3.setImageUri("pizza_morango_nutella.jpg");
+
+        Product p4 = new Product();
+        p4.setName("Pizza de Romeu e Julieta");
+        p4.setPrice(36.90);
+        p4.setDescription("Pizza doce com goiabada derretida e queijo cremoso.");
+        p4.setImageUri("pizza_romeu_julieta.jpg");
+
+        Product p5 = new Product();
+        p5.setName("Pizza de Doce de Leite com Coco");
+        p5.setPrice(38.90);
+        p5.setDescription("Pizza doce coberta com doce de leite e coco ralado.");
+        p5.setImageUri("pizza_doce_leite_coco.jpg");
+
+        return List.of(p1, p2, p3, p4, p5);
+    }
 }
